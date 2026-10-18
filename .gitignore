@@ -1,0 +1,5 @@
+*.swp
+.vscode
+.zig-cache
+zig-out
+zig-pkg

@@ -1,0 +1,15 @@
+qabstractbutton
+qapplication
+qboxlayout
+qcoreapplication
+qlabel
+qmetaobject
+qobject
+qobjectdefs
+qpushbutton
+qqmlengine
+qqmlerror
+qquickitem
+qquickwidget
+qurl
+qwidget

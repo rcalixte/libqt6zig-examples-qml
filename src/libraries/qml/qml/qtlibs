@@ -1,0 +1,7 @@
+qabstractitemmodel
+qcoreapplication
+qguiapplication
+qqmlapplicationengine
+qqmlcontext
+qqmlengine
+qvariant

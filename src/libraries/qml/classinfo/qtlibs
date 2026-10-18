@@ -1,0 +1,8 @@
+qcoreapplication
+qguiapplication
+qmetaobject
+qmetaobjectbuilder_p
+qobject
+qobjectdefs
+qqmlapplicationengine
+qvariant
