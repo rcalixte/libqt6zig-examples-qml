@@ -12,6 +12,7 @@ var main_files: std.ArrayList(struct {
     qt_libraries: []const []const u8,
     sys_libraries: []const []const u8,
     win_gui: bool,
+    file_depends: []const []const u8,
 }) = .empty;
 
 pub fn build(b: *std.Build) !void {
@@ -43,6 +44,7 @@ pub fn build(b: *std.Build) !void {
     var ok = true;
     var macos_syslibs: std.ArrayList([]const u8) = .empty;
     var macos_exelibs: std.ArrayList([]const u8) = .empty;
+    var file_depends: std.ArrayList([]const u8) = .empty;
 
     while (try walker.next(b.graph.io)) |entry|
         if (entry.kind == .file and std.mem.eql(u8, entry.basename, "main.zig")) {
@@ -55,6 +57,7 @@ pub fn build(b: *std.Build) !void {
             defer qtlibs_file.close(b.graph.io);
 
             var contents = try std.Io.Dir.cwd().readFileAlloc(b.graph.io, qtlibs_path, b.allocator, .unlimited);
+            try file_depends.append(b.allocator, qtlibs_path);
             var qtlibs_contents: std.ArrayList([]const u8) = .empty;
 
             var it = std.mem.tokenizeAny(u8, contents, "\r\n");
@@ -76,6 +79,7 @@ pub fn build(b: *std.Build) !void {
 
             if (syslibs_file) |syslib_file| {
                 defer syslib_file.close(b.graph.io);
+                try file_depends.append(b.allocator, syslibs_path);
 
                 contents = try std.Io.Dir.cwd().readFileAlloc(b.graph.io, syslibs_path, b.allocator, .unlimited);
                 it = std.mem.tokenizeAny(u8, contents, "\r\n");
@@ -93,6 +97,7 @@ pub fn build(b: *std.Build) !void {
 
             if (is_macos) if (macos_syslibs_file) |syslib_file| {
                 defer syslib_file.close(b.graph.io);
+                try file_depends.append(b.allocator, macos_syslibs_path);
 
                 contents = try std.Io.Dir.cwd().readFileAlloc(b.graph.io, macos_syslibs_path, b.allocator, .unlimited);
                 it = std.mem.tokenizeAny(u8, contents, "\r\n");
@@ -118,6 +123,7 @@ pub fn build(b: *std.Build) !void {
                 .qt_libraries = try qtlibs_contents.toOwnedSlice(b.allocator),
                 .sys_libraries = try syslibs_contents.toOwnedSlice(b.allocator),
                 .win_gui = win_gui,
+                .file_depends = try file_depends.toOwnedSlice(b.allocator),
             });
         } else if (entry.kind == .directory) {
             for (special_dirs) |dir_name| {
@@ -216,6 +222,8 @@ pub fn build(b: *std.Build) !void {
         });
 
         exe.root_module.addImport("libqt6zig", qt6zig.module("libqt6zig"));
+        for (main.file_depends) |depends_path|
+            b.dependOnFileContents(.{ .cwd_relative = depends_path });
 
         if (is_windows and main.win_gui) exe.subsystem = .windows;
 
@@ -268,7 +276,7 @@ pub fn build(b: *std.Build) !void {
 
 const win_root = "C:/Qt/6.8.3/llvm-mingw_64";
 
-const special_dirs = [_][]const u8{
+const special_dirs: []const []const u8 = &.{
     "/extras/",
     "/foss-extras/",
     "/foss-restricted/",
