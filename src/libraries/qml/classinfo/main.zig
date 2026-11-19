@@ -1,5 +1,5 @@
 // This example needs to be built similar to the following command:
-// zig build classinfo -Dqtprivate-paths={"/usr/include/x86_64-linux-gnu/qt6/QtCore/6.8.2","/usr/include/x86_64-linux-gnu/qt6/QtCore/6.8.2/QtCore/private"}
+// zig build classinfo -Dqtprivate-paths="/usr/include/x86_64-linux-gnu/qt6/QtCore/6.8.2" -Dqtprivate-paths="/usr/include/x86_64-linux-gnu/qt6/QtCore/6.8.2/QtCore/private"
 
 const std = @import("std");
 const qt6 = @import("libqt6zig");
@@ -32,7 +32,7 @@ pub fn main(init: std.process.Init) !void {
     //   QtObject { objectName: "Lamp" }
     //   QtObject { objectName: "Plant" }
     // }
-    for ([_][]const u8{ "Book", "Lamp", "Plant" }) |name| {
+    inline for (.{ "Book", "Lamp", "Plant" }) |name| {
         const item = QObject.new();
         item.setObjectName(name);
         try appendToDefault(init.gpa, shelf, item);
